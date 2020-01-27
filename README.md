@@ -5,7 +5,7 @@ Wrapper for some object detection models trained on parts produced on a 3D print
 ## Installation
 
 Install bboxes before:
-``bash
+```bash
 pip install git+https://github.com/czrcbl/bboxes
 ```
 
