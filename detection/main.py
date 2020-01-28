@@ -22,37 +22,10 @@ def filter_predictions(ids, scores, bboxes, threshold=0.0):
     fbboxes = bboxes.squeeze().asnumpy()[idx]
     return fids, fscores, fbboxes
 
-# (width, height) 
-# trans_map = {
-#     'ssd512': transforms.SSDDefaultTransform(512, 512),
-#     'ssd300': transforms.SSDDefaultTransform(300, 300),
-#     'yolo:': 0
-# }
-
-
-def list_models():
-    
-    data = {}
-    base_dir = cfg.checkpoints_folder
-    datasets = [x for x in sorted(os.listdir(base_dir)) if os.path.isdir(pjoin(base_dir, x))]
-    for ds in datasets:
-        models = os.listdir(pjoin(base_dir, ds))
-        data[ds] = models
-
-    return data
-
-def load_model(model, dataset):
-    pass
-
 
 class Detector:
-    model_data = list_models()
-    def __init__(self, model='ssd512', dataset='real', ctx='cpu', classes=cfg.classes, model_path=None):
-        data = Detector.model_data
-        if dataset not in data.keys():
-            raise ValueError('Dataset {} does not exist, avaliable datasets:{}'.format(dataset, data.keys()))
-        elif model not in data[dataset]:
-            raise ValueError('Model {} does not exist for dataset {}, avaliable models:{}'.format(model, dataset, data.keys()))
+    def __init__(self, model_path, model='ssd512', ctx='cpu', classes=cfg.CLASSES):
+
         
         #dataset_root = pjoin(cfg.dataset_folder, dataset)
         # with open(pjoin(dataset_root, 'classes.txt'), 'r') as f:
@@ -60,7 +33,6 @@ class Detector:
         #     classes = [line for line in classes if line]
         
         self.classes = classes
-        self.model = model
         if ctx == 'cpu':
             ctx = mx.cpu()
         elif ctx == 'gpu':
@@ -71,27 +43,22 @@ class Detector:
         self.short, self.width, self.height = None, None, None
         if model.lower() == 'ssd512':
             model_name = 'ssd_512_resnet50_v1_coco'
-            parameters_path = pjoin(cfg.checkpoints_folder, dataset, 'ssd512/transfer_512_ssd_512_resnet50_v1_coco_best.params')
             self.width, self.height = 512, 512
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
         elif model.lower() == 'ssd300':
             model_name = 'ssd_300_vgg16_atrous_coco'
-            parameters_path = pjoin(cfg.checkpoints_folder, dataset, 'ssd300/transfer_300_ssd_300_vgg16_atrous_coco_best.params')
             self.width, self.height = 300, 300
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
         elif (model.lower() == 'yolo') or (model.lower() == 'yolo416'):
             model_name = 'yolo3_darknet53_coco'
-            parameters_path = pjoin(cfg.checkpoints_folder, dataset, 'yolo416/transfer_416_yolo3_darknet53_coco_best.params')
             self.width, self.height = 416, 416
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
         elif (model.lower() == 'frcnn') or (model.lower() == 'faster_rcnn'):
             model_name = 'faster_rcnn_resnet50_v1b_coco'
-            parameters_path = pjoin(cfg.checkpoints_folder, dataset, 'faster_rcnn/transfer_faster_rcnn_resnet50_v1b_coco_best.params')
             self.short = 600
             self.transform = transforms.FasterRCNNDefaultTransform(short=600)
         elif model.lower() == 'ssd512_mobile':
             model_name = 'ssd_512_mobilenet1.0_coco'
-            parameters_path = pjoin(cfg.checkpoints_folder, dataset, 'ssd512_mobile/transfer_512_ssd_512_mobilenet1.0_coco_best.params')
             self.width, self.height = 512, 512
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
         else:
@@ -100,9 +67,7 @@ class Detector:
         net = model_zoo.get_model(model_name, pretrained=False, ctx=ctx)
         net.initialize(force_reinit=True, ctx=ctx)
         net.reset_class(classes=classes)
-        if model_path is not None:
-            parameters_path = model_path
-        net.load_parameters(parameters_path, ctx=ctx)
+        net.load_parameters(model_path, ctx=ctx)
         self.net = net
 
 
