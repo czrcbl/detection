@@ -16,8 +16,12 @@ cd bboxes
 git install -e .
 ```
 
+### Then install this package:
+
 Install on editable mode:
 ```bash
+git clone https://github.com/czrcbl/detection
+cd detection
 pip install -e .
 ```
 
