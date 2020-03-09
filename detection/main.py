@@ -24,7 +24,7 @@ def filter_predictions(ids, scores, bboxes, threshold=0.0):
 
 
 class Detector:
-    def __init__(self, model_path, model='ssd512', ctx='cpu', classes=cfg.CLASSES):
+    def __init__(self, model_path, model='ssd512', ctx='cpu', classes='normal'):
 
         
         #dataset_root = pjoin(cfg.dataset_folder, dataset)
@@ -32,7 +32,12 @@ class Detector:
         #     classes = [line.strip() for line in f.readlines()]
         #     classes = [line for line in classes if line]
         
-        self.classes = classes
+        if classes == 'normal':
+            self.classes = cfg.CLASSES
+        elif classes == 'grasp':
+            self.classes = cfg.CLASSES_GRASP
+        else:
+            raise ValueError('Wrong classes, valid args: norma, grasp.')
         if ctx == 'cpu':
             ctx = mx.cpu()
         elif ctx == 'gpu':
@@ -49,9 +54,12 @@ class Detector:
             model_name = 'ssd_300_vgg16_atrous_coco'
             self.width, self.height = 300, 300
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
-        elif (model.lower() == 'yolo') or (model.lower() == 'yolo416'):
+        elif (model.lower() == 'yolo416') or (model.lower() == 'yolo416'):
             model_name = 'yolo3_darknet53_coco'
             self.width, self.height = 416, 416
+        elif (model.lower() == 'yolo608') or (model.lower() == 'yolo416'):
+            model_name = 'yolo3_darknet53_coco'
+            self.width, self.height = 608, 608
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
         elif (model.lower() == 'frcnn') or (model.lower() == 'faster_rcnn'):
             model_name = 'faster_rcnn_resnet50_v1b_coco'
