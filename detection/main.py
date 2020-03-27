@@ -11,7 +11,7 @@ from gluoncv.data.transforms import presets
 
 from . import config as cfg
 from . import transforms
-from . bboxes import BboxList
+from bboxes import BboxList
 
 
 def filter_predictions(ids, scores, bboxes, threshold=0.0):
@@ -46,7 +46,7 @@ class Detector:
             raise ValueError('Invalid context.')
         self.ctx = ctx
         self.short, self.width, self.height = None, None, None
-        if model.lower() == 'ssd512':
+        if model.lower() == 'ssd512' or model.lower() == 'ssd':
             model_name = 'ssd_512_resnet50_v1_coco'
             self.width, self.height = 512, 512
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
@@ -54,10 +54,10 @@ class Detector:
             model_name = 'ssd_300_vgg16_atrous_coco'
             self.width, self.height = 300, 300
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
-        elif (model.lower() == 'yolo416') or (model.lower() == 'yolo416'):
+        elif model.lower() == 'yolo416':
             model_name = 'yolo3_darknet53_coco'
             self.width, self.height = 416, 416
-        elif (model.lower() == 'yolo608') or (model.lower() == 'yolo416'):
+        elif (model.lower() == 'yolo608') or (model.lower() == 'yolo'):
             model_name = 'yolo3_darknet53_coco'
             self.width, self.height = 608, 608
             self.transform = transforms.SSDDefaultTransform(self.width, self.height)
@@ -132,5 +132,5 @@ class Detector:
         else:
             rscaled_bboxes = fbboxes
             out_img = timg
-        box_list = BboxList(fids, fscores, rscaled_bboxes, self.classes, th=threshold, img=out_img)
+        box_list = BboxList.from_arrays(fids, fscores, rscaled_bboxes, class_names=self.classes, th=threshold)
         return box_list, timg
