@@ -74,7 +74,7 @@ class Detector:
 
         net = model_zoo.get_model(model_name, pretrained=False, ctx=ctx)
         net.initialize(force_reinit=True, ctx=ctx)
-        net.reset_class(classes=classes)
+        net.reset_class(classes=self.classes)
         net.load_parameters(model_path, ctx=ctx)
         self.net = net
 
